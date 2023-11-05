@@ -2,10 +2,12 @@ import React from 'react';
 
 /* INTERACTIVE COMPONENTS */
 import SignUpButton from '../components/signUpButton'
+import NavigationBar from '../components/navbar'
 
 const SignUp = () => {
     return (
         <div class = "bodyContent">
+          <NavigationBar/>
           <div class = "signUpFrame">
               <h2>Create an account</h2>
               <div id = "fname" class = "fieldFrame">

@@ -7,29 +7,22 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 /* PAGE DEPENDENCIES */
 import SignIn from './pages/signIn';
 import SignUp from './pages/signUp';
+import HomePage from './pages/homePage';
+
+/* INTERACTIVE COMPONENTS */
+import SignOutButton from './components/signOutButton';
 
 function App() {
-
   return (
     <Router>
-      
-      <NavigationBar/>
       <Routes>
         <Route exact path = '/signin' element = {<SignIn/>} />
         <Route exact path = '/signup' element = {<SignUp/>}/>
+        <Route exact path = '/home' element = {<HomePage/>}/>
       </Routes>
       <Footer/>
     </Router>
   );
-}
-
-function NavigationBar() {
-  return (
-    <div class = "navigationBar">
-        <img class = "navLogo" src = "images/appLogo.svg"/>
-        <h3>Bitterr</h3>
-    </div>
-  )
 }
 
 function Footer() {

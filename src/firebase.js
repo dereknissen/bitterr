@@ -4,9 +4,9 @@ import React from 'react'
 /* FIREBASE DEPENDENCIES */
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import "firebase/compat/database";
-import {useAuthState} from 'react-firebase-hooks/auth';
+import 'firebase/compat/database';
+
+import { getDatabase, ref, set } from 'firebase/database';
 
 firebase.initializeApp({
   apiKey: "AIzaSyC9UbICNpA767he7W-2PIbuyatG15nwni8",
@@ -15,13 +15,40 @@ firebase.initializeApp({
   storageBucket: "bitterr-e8569.appspot.com",
   messagingSenderId: "120892097413",
   appId: "1:120892097413:web:720206f407c653c9f47aec",
-  measurementId: "G-GSBPE4ME1Z"
+  measurementId: "G-GSBPE4ME1Z",
+  databaseURL: "https://bitterr-e8569-default-rtdb.firebaseio.com"
 });
 
-const database = firebase.database()
-const auth = firebase.auth()
+const database = firebase.database();
+const auth = firebase.auth();
+
+firebase.auth().onAuthStateChanged(user => { 
+  if (user) {
+    // User was successfully signed in
+    // Redirect to main page
+    
+    
+
+  }
+  else {
+    // User is not logged in
+    console.log("incorrect username or password");
+  }
+});
+
 
 /* FIREBASE FUNCTIONS */
+
+
+export function GetBitData () {
+  var usersRef = firebase.database().ref("bits");
+  var data = null;
+  usersRef.once("value", function(snapshot) {
+    data = snapshot.val();
+  })
+  return Object.create(data);
+}
+
 
 export function Register() {
     // Get all input fields
@@ -30,52 +57,78 @@ export function Register() {
     var password = document.getElementsByClassName('passwordEntry');
     var email = document.getElementsByClassName('emailEntry');
 
-    fname = fname[0].value;
-    lname = lname[0].value;
-    password = password[0].value;
-    email = email[0].value;
-    alert(fname + lname);
+    fname = fname[0].value.toString();
+    lname = lname[0].value.toString();
+    password = password[0].value.toString();
+    email = email[0].value.toString();
     if (ValidateField(email) == false || ValidateField(fname) == false || ValidateField(lname) == false || ValidatePassword(password) == false) {
-      alert(toString(email))
       return
       // Wasn't value, stops continuing the code
     }
     auth.createUserWithEmailAndPassword(email, password)
     .then(function() {
-      var user = auth.currentUser;
-  
-      // Add user profile to Firebase Database
-      var databaseRef = database.ref()
-  
-      // Create user data
-      var userData = {
-        email: email,
-        fname: fname,
-        lname: lname,
-        lastLogin: Date.now()
+
+      // Add user profile to realtime database
+
+      const data = {
+        "username": "N/A",
+        "firstName": fname,
+        "lastName": lname,
+        "password": password,
+        "email": email,
+        "likes": {},
+        "dislikes": {},
+        "bits": {},
+        "appraisal": 0
       }
-  
-      databaseRef.child('users/' + user.uid).set(userData)
+
+      const db = getDatabase();
+      set(ref(db, 'users/' + auth.currentUser.uid ), data);
+      window.location.href = "/home";
     })
     .catch(function(error) {
       var errorCode = error.errorcode
       var errorMessage = error.message
+      console.log(errorMessage);
     })
   }
-  
+
 export function SignIn() {
-    // Get all input fields
-    var email = document.getElementsByClassName("emailEntry");
-    var password = document.getElementsByClassName("passwordEntry");
+    if (document.readyState == "complete" || document.readyState == "loaded") {
+      // Get all input fields
+      var email = document.getElementsByClassName("emailEntry");
+      var password = document.getElementsByClassName("passwordEntry");
 
-    email = email[0].value;
-    password = password[0].value;
+      email = email[0].value;
+      password = password[0].value;
 
-    auth.signInWithEmailAndPassword(email, password)
-    .then(function() {
-        var user = auth.currentUser;
-        alert("Successfully signed in")
-    })
+      firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        console.log(error.code);
+        console.log(error.message);
+      });
+
+      firebase.auth().onAuthStateChanged(user => { 
+        if (user) {
+          // User was successfully signed in
+          // Redirect to main page
+          console.log(user.email + "logged in");
+          window.location.href = "/home";
+
+        }
+        else {
+          // User is not logged in
+          console.log("incorrect username or password");
+        }
+      });
+    }
+
+}
+
+export function SignOut() {
+  auth.signOut()
+  .then(function() {
+    window.location.href = "/signin"
+  })
 }
 
 function ValidatePassword(password) {
